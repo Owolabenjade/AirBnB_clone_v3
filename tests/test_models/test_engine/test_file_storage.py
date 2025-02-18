@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-Contains the TestFileStorageDocs classes
+Contains the TestFileStorageDocs and TestFileStorage classes
 """
 
 from datetime import datetime
@@ -71,6 +71,7 @@ class TestFileStorageDocs(unittest.TestCase):
 
 class TestFileStorage(unittest.TestCase):
     """Test the FileStorage class"""
+
     @unittest.skipIf(models.storage_t == 'db', "not testing file storage")
     def test_all_returns_dict(self):
         """Test that all returns the FileStorage.__objects attr"""
@@ -81,7 +82,7 @@ class TestFileStorage(unittest.TestCase):
 
     @unittest.skipIf(models.storage_t == 'db', "not testing file storage")
     def test_new(self):
-        """test that new adds an object to the FileStorage.__objects attr"""
+        """Test that new adds an object to the FileStorage.__objects attr"""
         storage = FileStorage()
         save = FileStorage._FileStorage__objects
         FileStorage._FileStorage__objects = {}
@@ -114,3 +115,26 @@ class TestFileStorage(unittest.TestCase):
         with open("file.json", "r") as f:
             js = f.read()
         self.assertEqual(json.loads(string), json.loads(js))
+
+    def test_get(self):
+        """Test the get method"""
+        storage = FileStorage()
+        state = State(name="California")
+        storage.new(state)
+        storage.save()
+
+        result = storage.get(State, state.id)
+        self.assertEqual(result, state)
+        self.assertIsNone(storage.get(State, "nonexistent_id"))
+
+    def test_count(self):
+        """Test the count method"""
+        storage = FileStorage()
+        state = State(name="California")
+        storage.new(state)
+        storage.save()
+
+        result = storage.count()
+        self.assertGreater(result, 0)
+        result = storage.count(State)
+        self.assertGreater(result, 0)
